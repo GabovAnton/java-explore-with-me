@@ -1,0 +1,34 @@
+logging:
+  level:
+    ru:
+      practicum: info
+    org:
+      springframework:
+        orm:
+          jpa: INFO
+        transaction: INFO
+      hibernate:
+          SQL: DEBUG
+          type: TRACE
+
+server:
+  port: 9090
+  datasource:
+    driverClassName: org.h2.Driver
+    password: password
+    url: jdbc:h2:mem:stat-service
+    username: sa
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        format_sql: true
+    show-sql: true
+  sql:
+    init:
+      mode: always
+spring:
+  banner:
+    location: banner-test.txt

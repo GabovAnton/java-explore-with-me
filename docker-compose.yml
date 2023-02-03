@@ -1,15 +1,55 @@
-version: '3.1'
+version: '3.8'
 services:
   stats-server:
     ports:
       - "9090:9090"
+    build: stats-service/stat-server
+    image: ewm-stats-server
+    container_name: stats_server
+    depends_on:
+      - stats-db
+    environment:
+      - DB_NAME=explore-with-me-stat
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=stats-db
+      - DB_PORT=5433
 
   stats-db:
     image: postgres:14-alpine
+    container_name: postgres-stats-db
+    ports:
+      - "6542:5433"
+    environment:
+      - POSTGRES_DB=explore-with-me-stat
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+  ############################################
 
   ewm-service:
+    build: ewm-service
+    image: ewm_main_service
+    container_name: ewm_main_service
     ports:
       - "8080:8080"
+    depends_on:
+      - ewm-db
+      - stats-server
+    environment:
+      - DB_NAME=explore-with-me-service
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - DB_HOST=db
+      - DB_PORT=5432
+      - EWM_SERVER_URL=http://stats-server:9090
 
   ewm-db:
     image: postgres:14-alpine
+    container_name: postgres-ewm-db
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_DB=explore-with-me-service
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+

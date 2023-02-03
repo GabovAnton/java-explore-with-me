@@ -1,0 +1,15 @@
+logging:
+  level:
+    ru:
+      practicum: info
+    org:
+      springframework:
+        orm:
+          jpa: INFO
+        transaction: INFO
+      hibernate:
+          SQL: DEBUG
+          type: TRACE
+spring:
+  banner:
+    location: banner-test.txt

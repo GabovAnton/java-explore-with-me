@@ -1,0 +1,7 @@
+logging:
+  level:
+    ru:
+      practicum: debug
+spring:
+  banner:
+    location: banner-production.txt
