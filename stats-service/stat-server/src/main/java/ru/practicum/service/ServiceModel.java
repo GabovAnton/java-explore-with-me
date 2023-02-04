@@ -26,7 +26,7 @@ public class ServiceModel {
 
     private String uri;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "service", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "service", cascade = CascadeType.ALL)
     private List<StatisticModel> serviceStatistics;
 
 }
