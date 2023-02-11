@@ -3,7 +3,6 @@ package ru.practicum.statistic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.EndpointHitDto;
 import ru.practicum.ServiceStatsDto;
@@ -19,11 +18,11 @@ public class StatsController {
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<EndpointHitDto> hitWithHttpInfo(@RequestBody EndpointHitDto hitWithHttpInfoDto) {
+    public EndpointHitDto hitWithHttpInfo(@RequestBody EndpointHitDto hitWithHttpInfoDto) {
 
         log.info("Saving hit: {}", hitWithHttpInfoDto);
         EndpointHitDto hitDto = statService.saveHit(hitWithHttpInfoDto);
-        return ResponseEntity.ok(hitDto);
+        return hitDto;
     }
 
     @GetMapping("/stats")
