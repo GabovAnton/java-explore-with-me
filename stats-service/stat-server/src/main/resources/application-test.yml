@@ -16,7 +16,7 @@ server:
   datasource:
     driverClassName: org.h2.Driver
     password: password
-    url: jdbc:h2:mem:stat-service
+    url: jdbc:h2:mem:stat-service;MODE=LEGACY;
     username: sa
   jpa:
     hibernate:
