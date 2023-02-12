@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.practicum.EndpointHitDto;
 import ru.practicum.EwmStatFeignClient;
-import ru.practicum.request.QRequest;
-import ru.practicum.user.UserRepository;
 import ru.practicum.eventcompilation.*;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.EntityNotFoundException;
 import ru.practicum.exception.ForbiddenException;
+import ru.practicum.request.QRequest;
+import ru.practicum.user.UserRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

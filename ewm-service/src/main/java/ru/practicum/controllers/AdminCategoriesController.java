@@ -12,11 +12,12 @@ import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/admin/categories")
 public class AdminCategoriesController {
 
     private final CategoryService categoryService;
 
-    @PostMapping("/admin/categories")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     CategoryDto addCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
 
@@ -25,7 +26,7 @@ public class AdminCategoriesController {
 
     }
 
-    @DeleteMapping("/admin/categories/{catId}")
+    @DeleteMapping("{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteCategory(@PathVariable("catId") Long catId) {
 
@@ -37,7 +38,7 @@ public class AdminCategoriesController {
 
     }
 
-    @PatchMapping("/admin/categories/{catId}")
+    @PatchMapping("{catId}")
     CategoryDto updateCategory(@PathVariable("catId") Long catId, @RequestBody CategoryDto categoryDto) {
 
         return categoryService.updateCategory(catId, categoryDto);

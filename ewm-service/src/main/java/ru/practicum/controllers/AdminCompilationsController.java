@@ -10,25 +10,26 @@ import ru.practicum.eventcompilation.UpdateCompilationRequestDto;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/admin/compilations")
 public class AdminCompilationsController {
 
     private final EventService eventService;
 
-    @PostMapping("/admin/compilations")
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     CompilationDto saveCompilation(@RequestBody NewCompilationDto newCompilationDto) {
 
         return eventService.saveCompilationAdmin(newCompilationDto);
     }
 
-    @DeleteMapping("/admin/compilations/{compId}")
+    @DeleteMapping("{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteCompilation(@PathVariable("compId") Long compId) {
 
         eventService.deleteCompilationAdmin(compId);
     }
 
-    @PatchMapping("/admin/compilations/{compId}")
+    @PatchMapping("{compId}")
     CompilationDto updateCompilation(@PathVariable("compId") Long compId,
             @RequestBody UpdateCompilationRequestDto updateCompilationRequestDto) {
 

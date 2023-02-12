@@ -73,14 +73,14 @@ public class CategoryServiceImpl implements CategoryService {
         int offset = from != null ? (from > 1 ? --from : from) : 0;
         long totalItems = categoryRepository.count() + 1;
 
-        List<CategoryDto> list = new ArrayList<>();
+        List<CategoryDto> categoryDtos = new ArrayList<>();
         for (Category category : query.from(qCategory).limit(size != null ? size : totalItems).offset(offset).fetch()) {
             if (category != null) {
                 CategoryDto categoryDto = categoryMapper.toDto(category);
-                list.add(categoryDto);
+                categoryDtos.add(categoryDto);
             }
         }
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(categoryDtos);
     }
 
     @Override

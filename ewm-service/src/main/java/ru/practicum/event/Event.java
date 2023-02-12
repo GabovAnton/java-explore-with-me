@@ -3,10 +3,10 @@ package ru.practicum.event;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import ru.practicum.request.Request;
-import ru.practicum.user.User;
 import ru.practicum.category.Category;
 import ru.practicum.eventcompilation.EventCompilation;
+import ru.practicum.request.Request;
+import ru.practicum.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -24,14 +24,12 @@ public class Event {
     private Long id;
 
     @Column(name = "annotation", length = 2000)
-
     private String annotation;
 
     @Column(length = 7000, name = "description")
     private String description;
 
     @Column(nullable = false, name = "event_date")
-
     private LocalDateTime eventDate;
 
     @Column(name = "published_on")

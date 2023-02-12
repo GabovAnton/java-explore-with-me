@@ -11,8 +11,8 @@ import ru.practicum.event.Event;
 import ru.practicum.event.EventRepository;
 import ru.practicum.event.EventService;
 import ru.practicum.event.RequestStatusEnum;
-import ru.practicum.user.UserService;
 import ru.practicum.exception.EntityNotFoundException;
+import ru.practicum.user.UserService;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -167,8 +167,7 @@ public class RequestServiceImpl implements RequestService {
         if (event.getEventRequests().stream().anyMatch(x -> x.getRequester().getId().equals(userId))) {
             throw new DataIntegrityViolationException("<private>  нельзя дважды сделать запрос на одно событие");
         }
-        if (!requestRepository.findRequestByUserAndEvent(userId, eventId).isEmpty()) {
-            //todo проверить
+        if (!requestRepository.findByEvent_Initiator_IdAndEvent_Id(userId, eventId).isEmpty()) {
             throw new DataIntegrityViolationException(
                     "<private>  инициатор события не может добавить запрос на участие в своём событии");
         }
@@ -209,15 +208,6 @@ public class RequestServiceImpl implements RequestService {
 
         Request request = requestRepository.findById(requestId).orElseThrow(() -> new EntityNotFoundException(
                 "<private> request with id:" + requestId + " doesn't exists"));
-
-/*        if (request.getStatus().equals(RequestStatusEnum.PENDING)) {
-
-
-        } else if (request.getStatus().equals(CONFIRMED)) {
-            request.setStatus(REJECTED);
-            log.debug("<private> participation in event {} for user with id: {} removed", request.getEvent().getId(), userId);
-
-        }*/
         request.setStatus(RequestStatusEnum.CANCELED);
 
         requestRepository.save(request);
@@ -236,12 +226,6 @@ public class RequestServiceImpl implements RequestService {
             throw new DataIntegrityViolationException(
                     "The participant limit for event id: " + event.getId() + "has been " + "reached");
         }
- /*       if (!event
-                .getEventStatus()
-                .equals(PENDING)) {
-            throw new DataIntegrityViolationException(
-                    "The participation event status can't be updated when event status is not equal 'Pending': ");*/
-        // }
     }
 
 }

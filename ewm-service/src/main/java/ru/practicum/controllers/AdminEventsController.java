@@ -10,11 +10,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/admin/events")
 public class AdminEventsController {
 
     private final EventService eventService;
 
-    @GetMapping("/admin/events")
+    @GetMapping()
     List<EventFullDto> searchEvents(@RequestParam(value = "users", required = false) List<Long> users,
             @RequestParam(value = "states", required = false) List<String> states,
             @RequestParam(value = "categories", required = false) List<Long> categories,
@@ -26,7 +27,7 @@ public class AdminEventsController {
         return eventService.searchAdminEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
-    @PatchMapping("/admin/events/{eventId}")
+    @PatchMapping("{eventId}")
     EventFullDto updateAdminEvent(@PathVariable("eventId") Long eventId,
             @RequestBody UpdateEventAdminRequest updateEventAdminRequest) {
 

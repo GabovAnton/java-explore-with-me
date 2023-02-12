@@ -1,10 +1,7 @@
 package ru.practicum.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.EventFullDto;
 import ru.practicum.event.EventService;
 import ru.practicum.event.EventShortDto;
@@ -14,11 +11,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/events")
 public class PublicEventsController {
 
     private final EventService eventService;
 
-    @GetMapping("/events")
+    @GetMapping()
     List<EventShortDto> getEventsPublic(@RequestParam(value = "text", required = false) String text,
             @RequestParam(value = "categories", required = false) List<Long> categories,
             @RequestParam(value = "paid", required = false) Boolean paid,
@@ -43,7 +41,7 @@ public class PublicEventsController {
                 request.getRequestURI());
     }
 
-    @GetMapping("/events/{id}")
+    @GetMapping("/{id}")
     EventFullDto getEventPublic(@PathVariable("id") Long id, HttpServletRequest request) {
 
         return eventService.getEventPublic(id, request.getRemoteAddr(), request.getRequestURI());
