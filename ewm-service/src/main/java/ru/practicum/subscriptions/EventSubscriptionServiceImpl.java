@@ -71,9 +71,9 @@ public class EventSubscriptionServiceImpl implements EventSubscriptionService {
                 eventSubscription =
                 eventSubscriptionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
                         "event subscription didn't find with id: " + id));
-        EventSubscription UpdatedEventSubscription = eventSubscriptionMapper.partialUpdate(eventSubscriptionDTO,
+        EventSubscription subscription = eventSubscriptionMapper.partialUpdate(eventSubscriptionDTO,
                 eventSubscription);
-        return eventSubscriptionMapper.toDto(eventSubscriptionRepository.save(UpdatedEventSubscription));
+        return eventSubscriptionMapper.toDto(eventSubscriptionRepository.save(subscription));
     }
 
     @Override
