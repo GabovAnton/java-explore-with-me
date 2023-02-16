@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: "agabov"
+    password: "fmbstlrfljvgoobf"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+ewm:
+  mail:
+    sender: agabov@gmail.com

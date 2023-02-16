@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.EventFullDto;
 import ru.practicum.event.EventService;
 import ru.practicum.event.UpdateEventAdminRequest;
+import ru.practicum.subscriptions.EventSubscriptionDto;
+import ru.practicum.subscriptions.EventSubscriptionService;
 
 import java.util.List;
 
@@ -14,6 +16,21 @@ import java.util.List;
 public class AdminEventsController {
 
     private final EventService eventService;
+
+    private final EventSubscriptionService eventSubscriptionService;
+
+    @GetMapping("/notifications/subscriptions/{eventId}")
+    List<EventSubscriptionDto> getSubscriptionsByEventId(@PathVariable Long eventId) {
+
+        return eventSubscriptionService.findAllByEventId(eventId);
+    }
+
+    @PatchMapping("/notifications/subscriptions/{subscriptionId}")
+    EventSubscriptionDto updateSubscription(EventSubscriptionDto eventSubscriptionDTO,
+            @PathVariable Long subscriptionId) {
+
+        return eventSubscriptionService.update(subscriptionId, eventSubscriptionDTO);
+    }
 
     @GetMapping()
     List<EventFullDto> searchEvents(@RequestParam(value = "users", required = false) List<Long> users,

@@ -3,6 +3,7 @@ package ru.practicum.user;
 import lombok.Getter;
 import lombok.Setter;
 import ru.practicum.request.Request;
+import ru.practicum.subscriptions.UserSubscription;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -26,5 +27,8 @@ public class User {
 
     @OneToMany(mappedBy = "requester")
     private Set<Request> requests;
+
+    @OneToMany(mappedBy = "subscribedTo", cascade = CascadeType.ALL)
+    private Set<UserSubscription> userSubscriptions;
 
 }
