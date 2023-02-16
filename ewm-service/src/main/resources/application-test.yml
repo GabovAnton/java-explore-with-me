@@ -1,0 +1,38 @@
+logging:
+  level:
+    ru:
+      practicum: DEBUG
+    org:
+      springframework:
+        orm:
+          jpa: INFO
+    #   transaction: INFO
+      hibernate:
+          SQL: INFO
+          #type: TRACE
+spring:
+  banner:
+    location: banner-test.txt
+  datasource:
+    driverClassName: org.h2.Driver
+    password: password
+    url: jdbc:h2:mem:ewm-service;
+    username: sa
+  jpa:
+    hibernate.ddl-auto: none
+    generate-ddl: true
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        format_sql: true
+    database: postgresql
+  sql:
+    init:
+      platform: postgres
+      mode: always
+
+
+
+EWM_SERVER_URL: "http://localhost:9090"
+
