@@ -20,6 +20,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     @Query("select e from Event e where e.id in ?1")
     Set<Event> findByIdIn(Collection<Long> ids);
 
-    List<Event> findByInitiator_Id(Long id);
+    List<Event> findByInitiatorId(Long id);
 
 }

@@ -10,24 +10,25 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users/{userId}/userSubscription/")
 public class PrivateUserSubscriptionsController {
 
     private final UserSubscriptionsService userSubscriptionsService;
 
-    @GetMapping("/users/{userId}/userSubscription/{subscribedToUserId}")
+    @GetMapping("{subscribedToUserId}")
     UserSubscriptionDto getSubscription(@PathVariable("userId") Long userId,
             @PathVariable("subscribedToUserId") Long subscribedToUserId) {
 
         return userSubscriptionsService.get(userId, subscribedToUserId);
     }
 
-    @GetMapping("/users/{userId}/userSubscription/all")
+    @GetMapping("all")
     List<UserSubscriptionDto> getAllSubscriptions(@PathVariable("userId") Long userId) {
 
         return userSubscriptionsService.findAllSubscriptionByUserId(userId);
     }
 
-    @PostMapping("/users/{userId}/userSubscription/{subscribedToUserId}")
+    @PostMapping("{subscribedToUserId}")
     @ResponseStatus(HttpStatus.CREATED)
     UserSubscriptionDto addSubscription(@PathVariable("userId") Long userId,
             @PathVariable Long subscribedToUserId,
@@ -53,14 +54,14 @@ public class PrivateUserSubscriptionsController {
                 subscribeDeleteEvents);
     }
 
-    @PatchMapping("/users/{userId}/userSubscription")
+    @PatchMapping()
     UserSubscriptionDto updateSubscription(@PathVariable("userId") Long userId,
             @RequestBody UserSubscriptionDto userSubscriptionDTO) {
 
         return userSubscriptionsService.update(userId, userSubscriptionDTO);
     }
 
-    @DeleteMapping("/users/{userId}/userSubscription/{subscriptionId}")
+    @DeleteMapping("{subscriptionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteSubscription(@PathVariable("userId") Long userId, @PathVariable("subscriptionId") Long subscriptionId) {
 

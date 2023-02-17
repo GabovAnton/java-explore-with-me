@@ -76,7 +76,7 @@ public class UserSubscriptionsServiceImpl implements UserSubscriptionsService {
                 subscribeChangeEvents,
                 subscribeDeleteEvents);
 
-        List<Event> friendEvents = eventRepository.findByInitiator_Id(subscribedToUserId);
+        List<Event> friendEvents = eventRepository.findByInitiatorId(subscribedToUserId);
 
         UserSubscription userSubscription = userSubscriptionMapper.fromNew(newUserSubscriptionDto);
         UserSubscriptionDto userSubscriptionDto = userSubscriptionMapper.toDto(userSubscriptionsRepository.save(

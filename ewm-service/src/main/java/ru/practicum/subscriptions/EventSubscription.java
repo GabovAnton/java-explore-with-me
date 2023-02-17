@@ -21,7 +21,7 @@ public class EventSubscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, updatable = false)
-    Long id;
+    private Long id;
 
     @Column(nullable = false)
     private Long subscriberId;
