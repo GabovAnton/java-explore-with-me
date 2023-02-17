@@ -86,7 +86,6 @@ public class RequestServiceImpl implements RequestService {
                 "<private>  event with id: " + eventId + " " + "not found"));
 
         if (event.getParticipantLimit().equals(0) || event.getRequestModeration().equals(false)) {
-            //TODO проверить логику(ничего не делаем...)
             return eventRequestStatusUpdateResult;
         }
         checkEventParticipationConstraints(event);

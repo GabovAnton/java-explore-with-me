@@ -1,6 +1,6 @@
 spring:
   profiles:
     group:
-      local: test
-      production: production
+      local: test, email
+      production: production, email
     default: production

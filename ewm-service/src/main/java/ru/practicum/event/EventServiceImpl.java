@@ -17,7 +17,12 @@ import ru.practicum.eventcompilation.*;
 import ru.practicum.exception.BadRequestException;
 import ru.practicum.exception.EntityNotFoundException;
 import ru.practicum.exception.ForbiddenException;
+import ru.practicum.notification.CustomSpringEventPublisher;
+import ru.practicum.notification.NotificationType;
 import ru.practicum.request.QRequest;
+import ru.practicum.subscriptions.EventSubscription;
+import ru.practicum.subscriptions.EventSubscriptionRepository;
+import ru.practicum.subscriptions.UserSubscription;
 import ru.practicum.user.UserRepository;
 
 import javax.persistence.EntityManager;
@@ -48,6 +53,8 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
 
+    private final EventSubscriptionRepository eventSubscriptionRepository;
+
     private final LocationRepository locationRepository;
 
     private final EventCompilationRepository eventCompilationRepository;
@@ -55,6 +62,8 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
 
     private final EwmStatFeignClient statFeignClient;
+
+    private final CustomSpringEventPublisher customSpringEventPublisher;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -113,7 +122,29 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto updateEvent(Event event) {
 
-        return eventMapper.toDto(eventRepository.save(event));
+        Event oldEvent = eventRepository.findById(event.getId()).orElseThrow(() -> new EntityNotFoundException(
+                "event with id:" + event.getId() + " not found"));
+
+        Event savedEvent = eventRepository.save(event);
+
+        EventFullDto eventFullDto = eventMapper.toDto(savedEvent);
+        log.debug("<private> event with id: {}  updated: {}", event.getId(), eventFullDto);
+        Set<EventSubscription> eventSubscriptions = savedEvent.getEventSubscriptions();
+        if (eventSubscriptions != null) {
+            String publicationInfo = compareEventFields(event, oldEvent);
+            if (StringUtils.isNoneBlank(publicationInfo)) {
+                customSpringEventPublisher.publishCustomEvent(
+                        "event with id:" + savedEvent.getId() + " updated -> " + publicationInfo,
+                        event.getId(),
+                        eventSubscriptions
+                                .stream()
+                                .filter(x -> x.getNotifyChangeEvents().equals(true))
+                                .map(EventSubscription::getSubscriberId)
+                                .collect(Collectors.toList()),
+                        NotificationType.CHANGE);
+            }
+        }
+        return eventFullDto;
     }
 
     @Override
@@ -246,15 +277,65 @@ public class EventServiceImpl implements EventService {
             throw new DataIntegrityViolationException("Only pending or canceled events can be changed");
         }
         Event updatedEvent = eventMapper.partialUpdateUser(updateEventUserRequestDto, event);
-        if (updateEventUserRequestDto.getStateAction().equals(CANCEL_REVIEW)) {
-            updatedEvent.setEventStatus(CANCELED);
-        } else {
-            updatedEvent.setEventStatus(PENDING);
+        if (updateEventUserRequestDto.getStateAction() != null) {
+            if (updateEventUserRequestDto.getStateAction().equals(CANCEL_REVIEW)) {
+                updatedEvent.setEventStatus(CANCELED);
+            } else {
+                updatedEvent.setEventStatus(PENDING);
+            }
         }
 
         EventFullDto updatedEventDto = eventMapper.toDto(eventRepository.save(updatedEvent));
         log.debug("<private> event with id: {}  updated: {}", eventId, updatedEventDto);
+        Set<EventSubscription> eventSubscriptions = updatedEvent.getEventSubscriptions();
+        if (eventSubscriptions != null) {
+            String publicationInfo = "event with id: " + eventId + " updated:" + getUpdatedFields(
+                    updateEventUserRequestDto);
+
+            customSpringEventPublisher.publishCustomEvent("event with id:" + eventId + " updated -> " + publicationInfo,
+                    eventId,
+                    eventSubscriptions
+                            .stream()
+                            .filter(x -> x.getNotifyChangeEvents().equals(true))
+                            .map(EventSubscription::getSubscriberId)
+                            .collect(Collectors.toList()),
+                    NotificationType.CHANGE);
+
+        }
         return updatedEventDto;
+    }
+
+    private String getUpdatedFields(UpdateEventUserRequestDto updatedEventDto) {
+
+        StringBuilder sb = new StringBuilder();
+        if (updatedEventDto.getAnnotation() != null) {
+            sb.append("<annotation>");
+        }
+        if (updatedEventDto.getEventDate() != null) {
+            sb.append("<event date>");
+        }
+        if (updatedEventDto.getTitle() != null) {
+            sb.append("<title>");
+        }
+        if (updatedEventDto.getDescription() != null) {
+            sb.append("<description>");
+        }
+        if (updatedEventDto.getPaid() != null) {
+            sb.append("<payment>");
+        }
+        if (updatedEventDto.getCategory() != null) {
+            sb.append("<category>");
+        }
+        if (updatedEventDto.getLocation() != null) {
+            sb.append("<location>");
+        }
+        if (updatedEventDto.getParticipantLimit() != null) {
+            sb.append("<participants limit>");
+        }
+        if (updatedEventDto.getStateAction() != null) {
+            sb.append("<status>");
+        }
+        return sb.toString();
     }
 
     @Override
@@ -268,7 +349,6 @@ public class EventServiceImpl implements EventService {
                 throw new DataIntegrityViolationException("Field: category. Error: must not be blank. Value: null");
             }
             Location location = locationMapper.toEntity(newEventDto.getLocation());
-
             Location savedLocation = locationRepository.save(location);
             Event newEvent = eventMapper.fromNewEventDtoToEntity(newEventDto);
             newEvent.setCreatedOn(LocalDateTime.now());
@@ -280,13 +360,58 @@ public class EventServiceImpl implements EventService {
                     savedEvent.getId(),
                     savedEvent.getTitle(),
                     savedEvent.getEventStatus());
+
             EventFullDto eventFullDto = eventMapper.toDto(savedEvent);
+            addEventSubscriptions(savedEvent);
+            Set<EventSubscription> eventSubscriptions = savedEvent.getEventSubscriptions();
+            if (eventSubscriptions != null) {
+                customSpringEventPublisher.publishCustomEvent(
+                        "New event with id:" + savedEvent.getId() + " created -> " + eventFullDto.getTitle() + " on " +
+                        eventFullDto.getEventDate(),
+                        savedEvent.getId(),
+                        eventSubscriptions.stream().filter(x -> x
+                                .getNotifyNewEvents()
+                                .equals(true)).map(EventSubscription::getSubscriberId).collect(Collectors.toList()),
+                        NotificationType.NEW);
+
+            }
             return eventFullDto;
+
         } else {
             throw new EntityNotFoundException(
                     "<private > can't create event: " + newEventDto.getTitle() + ". Reason: user with id: " + userId +
                     " doesn't exists");
         }
+
+    }
+
+    private Event addEventSubscriptions(Event event) {
+
+        if (event.getInitiator().getUserSubscriptions() != null) {
+            for (UserSubscription userSubscription : event.getInitiator().getUserSubscriptions()) {
+                EventSubscription eventSubscription = new EventSubscription(null,
+                        userSubscription.getUserId(),
+                        LocalDateTime.now(),
+                        userSubscription.getSubscribeNewEvents(),
+                        userSubscription.getSubscribeChangeEvents(),
+                        userSubscription.getSubscribeDeleteEvents(),
+                        event,
+                        null,
+                        event.getInitiator().getId());
+                if (event.getEventSubscriptions() != null) {
+                    event.getEventSubscriptions().add(eventSubscriptionRepository.save(eventSubscription));
+                } else {
+                    event.setEventSubscriptions(Set.of(eventSubscriptionRepository.save(eventSubscription)));
+
+                }
+                log.debug(
+                        " new event subscriptions for userId: {} and friendId: {}  and eventId successfully created: {}",
+                        userSubscription.getUserId(),
+                        event.getInitiator().getId(),
+                        event.getId());
+            }
+        }
+        return event;
     }
 
     private void checkNewEventDateConstraints(LocalDateTime newDateTime) {
@@ -383,13 +508,28 @@ public class EventServiceImpl implements EventService {
                 eventId,
                 updatedEvent,
                 updatedEvent.getEventStatus());
+        Set<EventSubscription> eventSubscriptions = updatedEvent.getEventSubscriptions();
+        if (eventSubscriptions != null) {
+            customSpringEventPublisher.publishCustomEvent(
+                    "event with id:" + eventId + " updated by admin -> " + updatedEventDto.getTitle() + " on " +
+                    updatedEventDto.getEventDate() + " new status: " + event.getEventStatus(),
+                    eventId,
+                    eventSubscriptions
+                            .stream()
+                            .filter(x -> x.getNotifyChangeEvents().equals(true))
+                            .map(EventSubscription::getSubscriberId)
+                            .collect(Collectors.toList()),
+                    NotificationType.CHANGE);
+
+        }
+
         return updatedEventDto;
     }
 
     private LocalDateTime stringToDate(String dateTime) {
 
         try {
-            return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss"));
+            return LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         } catch (DateTimeParseException e) {
             throw new BadRequestException("can't parse dateTime from string: " + dateTime);
@@ -526,6 +666,37 @@ public class EventServiceImpl implements EventService {
         log.debug("<public> Event compilation  requested with id {}, returned: {}", compId, compilationDto);
 
         return compilationDto;
+    }
+
+    private String compareEventFields(Event one, Event two) {
+
+        StringBuilder sb = new StringBuilder();
+        if (!one.getEventDate().equals(two.getEventDate())) {
+            sb.append("<event date>");
+        }
+        if (!one.getCategory().equals(two.getCategory())) {
+            sb.append("<category>");
+        }
+        if (!one.getEventStatus().equals(two.getEventStatus())) {
+            sb.append("<status>");
+        }
+        if (!one.getDescription().equals(two.getDescription())) {
+            sb.append("<description>");
+        }
+        if (!one.getPaid().equals(two.getPaid())) {
+            sb.append("<payment>");
+        }
+        if (!one.getAnnotation().equals(two.getAnnotation())) {
+            sb.append("<annotation>");
+        }
+        if (!one.getLocation().equals(two.getLocation())) {
+            sb.append("<location>");
+        }
+        if (!one.getTitle().equals(two.getTitle())) {
+            sb.append("<title>");
+        }
+
+        return sb.toString();
     }
 
 }

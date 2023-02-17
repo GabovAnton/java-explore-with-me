@@ -37,10 +37,11 @@ public class UserServiceImpl implements UserService {
         JPAQuery<User> query = new JPAQuery<>(entityManager);
         int offset = from != null ? (from > 1 ? --from : from) : 0;
         long totalItems = userRepository.count() + 1;
-        BooleanExpression lookInIdSetOnly = qUser.id.in(ids);
         BooleanBuilder builder = new BooleanBuilder();
 
         if (ids != null) {
+            BooleanExpression lookInIdSetOnly = qUser.id.in(ids);
+
             builder.and(lookInIdSetOnly);
             log.debug("query for users with ids in: {}  successfully constructed", ids);
 

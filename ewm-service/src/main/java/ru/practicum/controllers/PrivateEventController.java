@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.*;
+import ru.practicum.notification.NotificationMethod;
+import ru.practicum.notification.NotificationType;
+import ru.practicum.notification.SubscriptionNotificationDto;
 import ru.practicum.request.EventRequestStatusUpdateRequest;
 import ru.practicum.request.EventRequestStatusUpdateResult;
 import ru.practicum.request.ParticipationRequestDto;
 import ru.practicum.request.RequestService;
+import ru.practicum.subscriptions.EventSubscriptionService;
 
 import java.util.List;
 
@@ -18,6 +22,8 @@ public class PrivateEventController {
     private final EventService eventService;
 
     private final RequestService requestService;
+
+    private final EventSubscriptionService eventSubscriptionService;
 
     @GetMapping("/users/{userId}/events")
     List<EventShortDto> getEvents(@PathVariable("userId") Long userId,
@@ -61,6 +67,35 @@ public class PrivateEventController {
             @RequestBody EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
 
         return requestService.changeRequestStatus(userId, eventId, eventRequestStatusUpdateRequest);
+    }
+
+    @GetMapping("/users/{userId}/notifications/{friendId}")
+    List<SubscriptionNotificationDto> getNotifications(@PathVariable("userId") Long userId,
+            @PathVariable("friendId") Long friendId) {
+
+        return eventSubscriptionService.getNotificationsForSubscription(userId, friendId);
+    }
+
+    @GetMapping("/users/{userId}/notifications")
+    List<SubscriptionNotificationDto> searchNotifications(@PathVariable("userId") Long userId,
+            @RequestParam(value = "eventId", required = false) Long eventId,
+            @RequestParam(value = "rangeStart", required = false) String start,
+            @RequestParam(value = "rangeEnd", required = false) String end,
+            @RequestParam(value = "method", required = false) NotificationMethod method,
+            @RequestParam(value = "type", required = false) NotificationType type,
+            @RequestParam(value = "notified") Boolean notified,
+            @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+
+        return eventSubscriptionService.searchNotifications(userId,
+                eventId,
+                start,
+                end,
+                method,
+                type,
+                notified,
+                from,
+                size);
     }
 
 }

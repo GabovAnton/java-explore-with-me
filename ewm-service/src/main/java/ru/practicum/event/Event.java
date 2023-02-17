@@ -6,6 +6,7 @@ import org.hibernate.annotations.ColumnDefault;
 import ru.practicum.category.Category;
 import ru.practicum.eventcompilation.EventCompilation;
 import ru.practicum.request.Request;
+import ru.practicum.subscriptions.EventSubscription;
 import ru.practicum.user.User;
 
 import javax.persistence.*;
@@ -78,5 +79,8 @@ public class Event {
 
     @Column(name = "views")
     private Long views;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    private Set<EventSubscription> eventSubscriptions;
 
 }

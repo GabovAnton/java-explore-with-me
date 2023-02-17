@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecificationExecutor<Event> {
@@ -18,5 +19,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
 
     @Query("select e from Event e where e.id in ?1")
     Set<Event> findByIdIn(Collection<Long> ids);
+
+    List<Event> findByInitiatorId(Long id);
 
 }
